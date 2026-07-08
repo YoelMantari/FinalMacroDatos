@@ -1,0 +1,7 @@
+\section{Resumen}
+
+El presente informe documenta la implementacion de un cluster Apache Spark con HDFS en modo multimodo y su uso para procesar un dataset de la Plataforma Nacional de Datos Abiertos relacionado con economia y finanzas municipales. El caso de estudio corresponde a la emision de arbitrios municipales de la Municipalidad Distrital de Jesus Maria, con 222\,874 registros del periodo 2023--2025.
+
+El trabajo cubre el ciclo completo solicitado en el examen: carga desde HDFS, generacion de dos tablas JSON, dos consultas Spark SQL, dos modelos de regresion con campos decimales, dos modelos de clasificacion, metricas comparativas entre una ejecucion de un solo nodo y una ejecucion distribuida, graficos de perdida de entrenamiento y evidencias visuales del uso de recursos por nodo.
+
+La arquitectura distribuida quedo conformada por un nodo maestro y dos nodos esclavos sobre maquinas virtuales Ubuntu. Aunque la ejecucion multimodo finalizo correctamente, el tiempo total fue mayor que el obtenido en mononodo. Este resultado es coherente con el tamano moderado del dataset y con el costo adicional de YARN, HDFS, transferencia de bloques, shuffle distribuido y virtualizacion.

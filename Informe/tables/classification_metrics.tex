@@ -1,0 +1,15 @@
+\begin{table}[H]
+    \centering
+    \caption{Metricas de clasificacion: comparacion entre mononodo y cluster.}
+    \label{tab:classification}
+    \begin{tabular}{llrrrr}
+        \toprule
+        \textbf{Modelo} & \textbf{Ambiente} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-score} \\
+        \midrule
+        RandomForest & Mononodo & 0.8614 & 0.8833 & 0.8614 & 0.8421 \\
+        RandomForest & Cluster & 0.8593 & 0.8819 & 0.8593 & 0.8397 \\
+        MLPClassifier & Mononodo & 0.7458 & 0.8367 & 0.7458 & 0.7615 \\
+        MLPClassifier & Cluster & 0.7371 & 0.5433 & 0.7371 & 0.6255 \\
+        \bottomrule
+    \end{tabular}
+\end{table}

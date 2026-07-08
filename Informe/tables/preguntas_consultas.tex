@@ -1,0 +1,99 @@
+%\begin{longtable}{p{0.12\textwidth}p{0.22\textwidth}p{0.26\textwidth}p{0.25\textwidth}}
+\setlength{\emergencystretch}{3em}
+\begin{longtable}{
+  p{0.12\textwidth}
+  p{0.22\textwidth}
+  p{0.26\textwidth}
+  p{\dimexpr0.40\textwidth-8\tabcolsep\relax}
+}
+\caption{Preguntas del dataset, solucion aplicada e interpretacion.}
+
+\label{tab:preguntas-consultas}\\
+
+\toprule
+
+\textbf{Item} & \textbf{Pregunta que responde} & \textbf{Columnas/\newline caracteristicas usadas} & \textbf{Solucion e \newline interpretacion} \\
+
+\midrule
+
+\endfirsthead
+
+\toprule
+
+\textbf{Item} & \textbf{Pregunta que responde} & \textbf{Columnas/\newline caracteristicas usadas} & \textbf{Solucion e \newline interpretacion} \\
+
+\midrule
+
+\endhead
+
+ETL y tablas JSON &
+
+¿Como separar el dataset original en estructuras reutilizables sin depender de PostgreSQL? &
+
+\texttt{COD\_CONTRIBUYENTE}, \texttt{NOM\_CONTRIBUYENTE}, \texttt{COD\_PREDIO}, \texttt{PERIODO}, montos, descuentos y \texttt{UBIGEO}. &
+
+Se generan \texttt{contribuyentes.json} y \texttt{emisiones.json}. La primera funciona como dimension y la segunda como tabla de hechos a nivel predio-contribuyente-periodo. Codigo: \texttt{ETL.scala}. \\
+
+\midrule
+
+SQL 1: \texttt{groupBy} + funciones &
+
+¿Cuanto se emitio en total y en promedio por concepto municipal durante cada periodo? &
+
+\texttt{PERIODO}, \texttt{MONTO\_PARQUE\_JARDIN}, \texttt{MONTO\_SERENAZGO}, \texttt{MONTO\_RESIDUO\_SOLIDO}, \texttt{MONTO\_BARRIDO\_CALLE}. &
+
+Se agrupa por periodo y se aplican \texttt{sum}, \texttt{avg}, \texttt{count} y \texttt{round}. Permite comparar la evolucion anual de la emision por concepto. Codigo: \texttt{SqlQueries.query1GroupByPeriodo}. \\
+
+\midrule
+
+SQL 2: vista temporal + \texttt{ORDER BY} &
+
+¿Cuales son los predios exclusivos con mayor monto total neto en 2025? &
+
+\texttt{COD\_PREDIO}, \texttt{COD\_CONTRIBUYENTE}, \texttt{PERIODO}, \texttt{PORCENTAJE\_CONDOMINIO}, montos y descuentos. &
+
+Se crea una vista temporal y se filtra 2025 con condominio 100. Luego se calcula monto neto y se ordena de mayor a menor. Codigo: \texttt{SqlQueries.query2TopPrediosTempView}. \\
+
+\midrule
+
+Regresion MLP &
+
+¿Se puede estimar el monto de serenazgo a partir de variables monetarias y del periodo? &
+
+\texttt{MONTO\_SERENAZGO} como etiqueta; \texttt{PERIODO}, \texttt{PORCENTAJE\_CONDOMINIO}, montos y descuentos como features. &
+
+Se implementa un MLP de regresion con salida lineal y perdida MSE. El menor RMSE frente a SVR indica mejor ajuste global para esta tarea. Codigo: \texttt{MLPRegressor.scala}. \\
+
+\midrule
+
+Regresion SVR &
+
+?Como se comporta una regresion basada en SVM para estimar serenazgo? &
+
+Mismas variables de regresion que MLP para mantener comparabilidad. &
+
+Se implementa SVR lineal con perdida epsilon-insensitiva. Tiene resultados positivos, pero mayor RMSE que MLP. Codigo: \texttt{SVRegressor.scala}. \\
+
+\midrule
+
+Clasificacion Random Forest &
+
+¿Se puede clasificar un predio como exclusivo o compartido usando variables decimales sin fuga de datos? &
+
+\texttt{TIPO\_PREDIO} como etiqueta derivada; se excluye \texttt{PORCENTAJE\_CONDOMINIO} de las features para evitar fuga. &
+
+Random Forest logra el mejor F1-score. Su interpretacion es que los arboles capturan mejor reglas por umbral y relaciones no lineales. Codigo: \texttt{RFAndMLPClassification.scala}. \\
+
+\midrule
+
+Clasificacion MLP &
+
+¿Que desempeno tiene una red neuronal para clasificar tipo de predio frente a Random Forest? &
+
+Mismas variables de clasificacion que Random Forest. &
+
+MLPClassifier funciona, pero obtiene menor F1-score que Random Forest, por lo que requiere mayor ajuste. Codigo: \texttt{RFAndMLPClassification.scala}. \\
+
+\bottomrule
+
+\end{longtable}

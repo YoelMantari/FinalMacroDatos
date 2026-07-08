@@ -1,0 +1,15 @@
+\begin{table}[H]
+    \centering
+    \caption{Metricas de regresion: comparacion entre mononodo y cluster.}
+    \label{tab:regression}
+    \begin{tabular}{llrrrr}
+        \toprule
+        \textbf{Modelo} & \textbf{Ambiente} & \textbf{RMSE} & \textbf{MSE} & \textbf{MAE} & $\boldsymbol{R^2}$ \\
+        \midrule
+        MLPRegressor & Mononodo & 1352.55 & 1\,829\,399.43 & 281.91 & 0.2233 \\
+        MLPRegressor & Cluster & 1384.64 & 1\,917\,232.43 & 284.91 & 0.2302 \\
+        SVRegressor & Mononodo & 1430.10 & 2\,045\,182.64 & 232.98 & 0.1317 \\
+        SVRegressor & Cluster & 1486.36 & 2\,209\,266.74 & 257.77 & 0.1130 \\
+        \bottomrule
+    \end{tabular}
+\end{table}

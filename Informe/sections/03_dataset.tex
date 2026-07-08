@@ -1,0 +1,32 @@
+\section{Dataset utilizado}
+\label{sec:dataset}
+
+\subsection{Fuente y descripcion}
+
+Se utilizo el dataset \textit{\datasetname}, obtenido desde la Plataforma Nacional de Datos Abiertos del Peru (PNDA) y publicado por la Municipalidad Distrital de Jesus Maria - Lima. En la ficha oficial, el conjunto aparece dentro de la categoria Economia y Finanzas y asociado a Dataton 2025. El dataset contiene informacion de emision de arbitrios municipales por predio, contribuyente y periodo, incluyendo montos por parques y jardines, serenazgo, residuos solidos, barrido de calles y descuentos asociados.
+
+La ficha PNDA registra fecha de lanzamiento 2025-04-24, fecha de modificacion 2025-08-06, licencia Open Data Commons Attribution License y acceso publico. La copia trabajada contiene 222\,874 registros y 18 columnas, con datos para los periodos 2023, 2024 y 2025. El archivo local empleado fue \texttt{data/dataset\_vf\_3.csv}, delimitado por punto y coma. La columna \texttt{FECHA\_CORTE} coincide con la fecha de lanzamiento del dataset para la muestra revisada de 2025.
+
+\subsection{Relacion con economia y finanzas}
+
+El conjunto pertenece al ambito de economia y finanzas municipales porque registra obligaciones tributarias locales asociadas a servicios municipales. Su analisis permite estudiar recaudacion potencial, distribucion de cargas por predio, comportamiento por periodo y diferencias entre tipos de predios.
+
+\subsection{Investigaciones previas y uso del dataset}
+
+No se identificaron, dentro de la informacion local del proyecto, articulos academicos que utilicen exactamente este dataset de arbitrios de Jesus Maria. Por ello, el trabajo se plantea como un analisis reproducible sobre una base publica reciente, orientado a transparencia fiscal y analitica municipal. Como antecedente metodologico se consideran los usos generales de datos abiertos gubernamentales para rendicion de cuentas, fiscalizacion ciudadana y mejora de servicios publicos.
+
+\subsection{Campos principales}
+
+Los campos usados en el procesamiento fueron:
+
+\begin{itemize}
+    \item Identificacion: \texttt{COD\_CONTRIBUYENTE}, \texttt{NOM\_CONTRIBUYENTE}, \texttt{COD\_PREDIO}.
+    \item Tiempo y ubicacion: \texttt{FECHA\_CORTE}, \texttt{PERIODO}, \texttt{UBIGEO}, \texttt{DEPARTAMENTO}, \texttt{PROVINCIA}, \texttt{DISTRITO}.
+    \item Montos decimales: \texttt{MONTO\_PARQUE\_JARDIN}, \texttt{MONTO\_SERENAZGO}, \texttt{MONTO\_RESIDUO\_SOLIDO}, \texttt{MONTO\_BARRIDO\_CALLE}.
+    \item Descuentos y topes: \texttt{DESCUENTO\_TOPE\_PARQUE\_JARDIN}, \texttt{DESCUENTO\_TOPE\_SERENAZGO}, \texttt{MONTO\_TOPE\_RESIDUO\_SOLIDO}, \texttt{DESCUENTO\_TOPE\_BARRIO\_CALLE}.
+    \item Condominio: \texttt{PORCENTAJE\_CONDOMINIO}, usado para distinguir predios exclusivos y compartidos.
+\end{itemize}
+
+\subsection{Limpieza de datos}
+
+El CSV presenta montos con coma como separador de miles, por ejemplo \texttt{1,257.60}. En el ETL se elimino la coma antes de castear a \texttt{Double}, evitando interpretar estos valores como texto. Esta limpieza se implemento en \texttt{ETL.DecimalCols}, aplicada a todas las columnas monetarias y porcentuales.

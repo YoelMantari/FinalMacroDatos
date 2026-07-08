@@ -1,0 +1,62 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Local assistant/session files
+.claude/
+.codex/
+.agents/
+
+# Build artifacts
+target/
+*.class
+*.jar
+
+# Spark / Hadoop / Hive generated state
+metastore_db/
+derby.log
+spark-warehouse/
+warehouse/
+hsperfdata_*/
+
+# Generated outputs
+output/
+output_*/
+output_multinodo_*/
+
+# Large datasets / packaged archives
+data/
+dataset*.csv
+dataset *.csv
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb
+
+# Python/cache artifacts if helper scripts are added later
+__pycache__/
+*.py[cod]
+.pytest_cache/

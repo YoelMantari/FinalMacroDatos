@@ -1,0 +1,33 @@
+\section{Resultados experimentales}
+
+\subsection{Comparacion de rendimiento}
+
+La Tabla~\ref{tab:performance} compara la ejecucion completa del proyecto en un nodo frente a la ejecucion completa en el cluster YARN de tres nodos. Se usa como referencia la ejecucion \texttt{all}, que incluye ETL, consultas SQL, regresion y clasificacion.
+
+\input{tables/performance}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{ImgNod1/Capturas_Rercursos_3nodo_en_vivo.png}
+    \caption{Monitor de recursos por nodo durante la ejecucion: master, slave1 y slave-base.}
+    \label{fig:htop-all}
+\end{figure}
+
+\subsection{Metricas de regresion}
+
+\input{tables/regression_metrics}
+
+En ambos ambientes el MLPRegressor obtuvo mejor RMSE y MSE que el SVRegressor. Los valores de $R^2$ son positivos pero moderados, lo que indica que las variables disponibles explican parte del comportamiento de \texttt{MONTO\_SERENAZGO}, aunque no capturan toda la variabilidad del cobro.
+
+\subsection{Metricas de clasificacion}
+
+\input{tables/classification_metrics}
+
+Random Forest fue el modelo de clasificacion mas estable y con mejor F1-score. El MLPClassifier alcanzo desempeno superior al azar, pero fue mas sensible al entorno y a la separacion de datos; esto es esperable en una red pequena sin mayor ajuste de hiperparametros.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{ImgNod1/Metricas_Regresion_Clasificacion.png}
+    \caption{Metricas de regresion y clasificacion obtenidas en la ejecucion multimodo desde HDFS.}
+    \label{fig:cluster-metrics-terminal}
+\end{figure}

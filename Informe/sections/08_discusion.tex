@@ -1,0 +1,19 @@
+\section{Discusi\'on de resultados}
+
+\subsection{Interpretacion de la comparacion mononodo vs. multimodo}
+
+El cluster distribuido funciono correctamente y ejecuto el proyecto con estado final \texttt{SUCCEEDED}. Sin embargo, para este dataset el entorno mononodo fue mas rapido. La razon principal es que el volumen de datos es pequeno para un cluster: 58 MB en CSV y 222\,874 registros. En ese rango, el costo fijo de iniciar aplicaciones YARN, coordinar contenedores, leer desde HDFS, serializar datos, mover bloques de shuffle y sincronizar resultados puede superar el beneficio de paralelizar.
+
+Tambien influyo el contexto de virtualizacion. Los nodos workers tienen recursos ajustados, especialmente 2 GB de RAM y 1 vcore cada uno. Durante algunas ejecuciones aparecieron advertencias \texttt{FetchFailed}; Spark pudo recuperarse mediante reintentos y la aplicacion finalizo correctamente, pero esos reintentos aumentan el tiempo total. En un dataset mayor, o con workers con mas memoria y CPU, el cluster deberia mostrar mejor escalamiento.
+
+\subsection{Interpretacion de las consultas SQL}
+
+La consulta por periodo muestra que el numero de emisiones aumento de 69\,880 en 2023 a 79\,013 en 2025. Serenazgo es el concepto con mayor monto total en los tres periodos, superando los 24 millones en 2023 y llegando a 27.8 millones en 2025. Barrido de calles tiene el monto total mas bajo, pero crece de 2.64 millones en 2023 a 3.31 millones en 2025.
+
+La consulta de top 20 para 2025 permite identificar predios exclusivos con montos netos excepcionalmente altos. Estos registros son utiles para auditoria, priorizacion de fiscalizacion o analisis de concentracion de la recaudacion.
+
+\subsection{Interpretacion de los modelos}
+
+En regresion, el MLPRegressor logra el menor error global. El SVRegressor tiene menor MAE local, pero mayor RMSE y MSE, lo que sugiere mayor sensibilidad ante errores grandes. Los valores de $R^2$ moderados indican que la variable \texttt{MONTO\_SERENAZGO} depende de factores adicionales que no estan completamente representados en el dataset.
+
+En clasificacion, Random Forest se comporta mejor que el MLPClassifier. Esto es razonable porque los arboles capturan relaciones no lineales y reglas por umbral con menor necesidad de ajuste fino. El MLPClassifier requiere mayor calibracion de arquitectura, iteraciones y posiblemente balanceo de clases para mejorar su F1-score.

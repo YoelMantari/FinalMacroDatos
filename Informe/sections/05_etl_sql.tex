@@ -1,0 +1,55 @@
+\section{Generaci\'on de tablas JSON y consultas Spark SQL}
+
+\subsection{ETL y tablas generadas}
+
+El ETL lee el CSV desde HDFS o disco local, limpia columnas decimales, castea los campos temporales y genera dos tablas JSON:
+
+\begin{itemize}
+    \item \texttt{contribuyentes.json}: dimension de contribuyentes con \texttt{COD\_CONTRIBUYENTE} y \texttt{NOM\_CONTRIBUYENTE}. Se conserva el nombre mas reciente por contribuyente.
+    \item \texttt{emisiones.json}: tabla de hechos con granularidad \texttt{(COD\_PREDIO, COD\_CONTRIBUYENTE, PERIODO)}. Esta tabla contiene los montos, descuentos, porcentaje de condominio y ubigeo.
+\end{itemize}
+
+La corrida local verifico 222\,874 filas crudas, 47\,175 contribuyentes y 222\,873 emisiones despues de eliminar un duplicado exacto sobre la clave natural de hechos.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{ImgMultiNodo/json_Contribuyente_emisiones.png}
+    \caption{Salidas HDFS generadas por el ETL en \texttt{contribuyentes.json} y \texttt{emisiones.json}.}
+    \label{fig:hdfs-tables}
+\end{figure}
+
+\subsection{Preguntas respondidas y relacion con el codigo}
+
+La Tabla~\ref{tab:preguntas-consultas} resume, para cada grupo de pregunta solicitado, la consulta analitica que responde, las columnas o caracteristicas empleadas, la solucion implementada, la interpretacion de los resultados y el archivo Scala asociado.
+
+\input{tables/preguntas_consultas}
+
+\subsection{Consulta 1: recaudacion por periodo}
+
+\textbf{Pregunta de an\'alisis:} \textquestiondown Cu\'anto se emiti\'o en total y en promedio por concepto municipal durante cada periodo?
+
+La primera consulta utiliza la API DataFrame de Spark con \texttt{groupBy("PERIODO")} y funciones de \texttt{org.apache.spark.sql.functions}: \texttt{sum}, \texttt{avg}, \texttt{round} y \texttt{count}. El resultado permite comparar la evolucion anual de los conceptos de parques y jardines, serenazgo, residuos solidos y barrido de calles.
+
+\input{tables/query1}
+
+\subsection{Consulta 2: top de predios exclusivos 2025}
+
+\textbf{Pregunta de an\'alisis:} \textquestiondown Cu\'ales son los predios de propiedad exclusiva con mayor monto total neto en 2025?
+
+La segunda consulta registra \texttt{emisiones} como vista temporal y ejecuta SQL con filtros \texttt{WHERE PERIODO = 2025} y \texttt{PORCENTAJE\_CONDOMINIO = 100}, calculando el monto total neto y ordenando de forma descendente con \texttt{ORDER BY}. La salida final se limita a los 20 predios principales.
+
+\input{tables/query2}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{ImgMultiNodo/json_query_1_2.png}
+    \caption{Directorios HDFS generados para las dos consultas Spark SQL.}
+    \label{fig:hdfs-queries}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{ImgNod1/ETL_SQL.png}
+    \caption{Ejecucion mononodo: conteos ETL y resultados de las dos consultas en terminal.}
+    \label{fig:local-etl-sql}
+\end{figure}

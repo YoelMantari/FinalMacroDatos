@@ -1,0 +1,7 @@
+\section{Conclusiones}
+
+Se implemento y valido un flujo completo de procesamiento en Spark con HDFS para el dataset de arbitrios municipales de Jesus Maria. El proyecto genero dos tablas JSON, ejecuto dos consultas Spark SQL, entreno dos modelos de regresion y dos modelos de clasificacion, y produjo salidas reproducibles en mononodo y multimodo.
+
+El cluster multimodo demostro paralelismo real: YARN reporto tres nodos activos, contenedores distribuidos y recursos asignados en master y workers. La aplicacion finalizo con estado \texttt{SUCCEEDED}. La comparacion de rendimiento, no obstante, favorecio al mononodo debido al tamano moderado del dataset y al overhead del entorno distribuido.
+
+Desde el punto de vista analitico, la mayor carga de emision corresponde a serenazgo, mientras que Random Forest fue el mejor clasificador de tipo de predio y MLPRegressor fue el mejor regresor para estimar \texttt{MONTO\_SERENAZGO}. Los resultados son consistentes y defendibles para una demostracion en vivo, siempre que se explique que el objetivo del examen es demostrar configuracion, ejecucion distribuida y comparacion, no necesariamente obtener aceleracion con una base pequena.

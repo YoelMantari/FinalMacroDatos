@@ -1,0 +1,99 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{pdflscape}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+
+\geometry{margin=2.5cm}
+\onehalfspacing
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}
+\setlist[itemize]{leftmargin=1.2cm}
+\setlist[enumerate]{leftmargin=1.2cm}
+
+\definecolor{codegray}{RGB}{245,245,245}
+\definecolor{linkblue}{RGB}{22,82,150}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=linkblue,
+    urlcolor=linkblue,
+    citecolor=linkblue,
+    pdftitle={Informe Final Spark HDFS Arbitrios MDJM},
+    pdfauthor={Grupo CC531}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{CC531 A - An\'alisis en Macrodatos}
+\rhead{Examen Final}
+\cfoot{\thepage}
+
+\lstdefinelanguage{scala}{
+  morekeywords={abstract,case,catch,class,def,do,else,extends,false,final,finally,for,forSome,if,implicit,import,lazy,match,new,null,object,override,package,private,protected,return,sealed,super,this,throw,trait,true,try,type,val,var,while,with,yield},
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]"
+}
+
+\lstdefinelanguage{bash}{
+  morekeywords={cd,make,time,hdfs,spark-submit},
+  sensitive=true,
+  morecomment=[l]{\#},
+  morestring=[b]"
+}
+
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    backgroundcolor=\color{codegray},
+    breaklines=true,
+    frame=single,
+    framerule=0.2pt,
+    columns=fullflexible,
+    keepspaces=true,
+    showstringspaces=false,
+    tabsize=2
+}
+
+\newcommand{\projecttitle}{Implementaci\'on y evaluaci\'on de un cl\'uster Spark con HDFS para el an\'alisis de arbitrios municipales de Jes\'us Mar\'ia}
+\newcommand{\datasetname}{Emisi\'on de arbitrios municipales de la Municipalidad Distrital de Jes\'us Mar\'ia}
+
+\begin{document}
+
+\input{sections/00_portada}
+\tableofcontents
+\newpage
+
+\input{sections/01_resumen}
+\input{sections/03_dataset}
+\input{sections/04_implementacion}
+\input{sections/05_etl_sql}
+\input{sections/06_modelos}
+\input{sections/07_resultados}
+\input{sections/08_discusion}
+\input{sections/09_conclusiones}
+\input{sections/10_referencias}
+\appendix
+\input{sections/11_anexos}
+
+\end{document}
