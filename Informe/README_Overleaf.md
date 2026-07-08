@@ -1,6 +1,8 @@
 # Informe para Overleaf
 
-Archivo principal recomendado: `main.tex`.
+Archivo principal recomendado para el informe: `main.tex`.
+
+Archivo principal recomendado para la presentacion: `presentacion.tex`.
 
 Tambien se puede compilar `Template.tex`, que solo redirige a `main.tex`.
 

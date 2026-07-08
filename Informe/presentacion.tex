@@ -1,0 +1,375 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{caption}[numbered]
+
+\definecolor{uniBlue}{RGB}{20,65,120}
+\definecolor{softGray}{RGB}{245,247,250}
+\setbeamercolor{structure}{fg=uniBlue}
+\setbeamercolor{block title}{fg=white,bg=uniBlue}
+\setbeamercolor{block body}{bg=softGray}
+
+\title[CC531 - Spark + HDFS]{Implementacion y evaluacion de un cluster Spark con HDFS para el analisis de arbitrios municipales}
+\subtitle{Dataset de arbitrios municipales de Jesus Maria - PNDA}
+\author{Integrante 1 \and Integrante 2 \and Integrante 3}
+\institute{Universidad Nacional de Ingenieria \\ CC531 A - Analisis en Macrodatos}
+\date{Julio de 2026}
+
+\newcommand{\imgslide}[4]{
+\begin{frame}{#1}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.64\textwidth}
+            \centering
+            \includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{#2}
+        \end{column}
+        \begin{column}{0.33\textwidth}
+            \begin{block}{Evidencia}
+                #3
+            \end{block}
+            \vspace{0.2cm}
+            \begin{block}{Interpretacion}
+                #4
+            \end{block}
+        \end{column}
+    \end{columns}
+\end{frame}
+}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}{Contenido}
+    \begin{enumerate}
+        \item Problema y dataset.
+        \item Configuracion del cluster Spark + HDFS.
+        \item Ejecucion mononodo y multimodo.
+        \item Consultas SQL y salidas JSON.
+        \item Modelos de regresion y clasificacion.
+        \item Comparacion, interpretacion y cierre.
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{Problema de analisis}
+    \begin{block}{Contexto}
+        La municipalidad emite arbitrios por predio y periodo: parques y jardines, serenazgo, residuos solidos y barrido de calles.
+    \end{block}
+
+    \begin{block}{Problema trabajado}
+        Analizar la estructura de emision de arbitrios para identificar volumen anual, predios con mayores montos, y capacidad predictiva de variables monetarias sobre montos y tipo de predio.
+    \end{block}
+
+    \begin{block}{Uso de Spark + HDFS}
+        El objetivo no es solo calcular resultados, sino ejecutar el flujo en un cluster real: datos en HDFS, procesamiento distribuido con Spark sobre YARN y comparacion contra un nodo local.
+    \end{block}
+\end{frame}
+
+\begin{frame}{Dataset utilizado}
+    \begin{itemize}
+        \item Fuente: Plataforma Nacional de Datos Abiertos del Peru.
+        \item Dataset: Emision de arbitrios municipales de la Municipalidad Distrital de Jesus Maria - MDJM.
+        \item Categoria: Economia y Finanzas.
+        \item Fecha de lanzamiento: 2025-04-24.
+        \item Fecha de modificacion: 2025-08-06.
+        \item Registros usados: 222\,874 filas, periodos 2023, 2024 y 2025.
+        \item Archivo trabajado: \texttt{dataset\_vf\_3.csv}.
+    \end{itemize}
+
+    \vspace{0.15cm}
+    \small
+    \textbf{Idea central:} usar datos abiertos municipales para observar recaudacion potencial, concentracion de montos y comportamiento por tipo de predio.
+\end{frame}
+
+\begin{frame}{Flujo general del proyecto}
+    \begin{enumerate}
+        \item Cargar el CSV desde HDFS.
+        \item Limpiar montos decimales y separar dos tablas JSON.
+        \item Ejecutar dos consultas Spark SQL.
+        \item Entrenar modelos de regresion: MLPRegressor y SVRegressor.
+        \item Entrenar modelos de clasificacion: Random Forest y MLPClassifier.
+        \item Comparar resultados mononodo vs. cluster de tres nodos.
+    \end{enumerate}
+
+    \begin{block}{Salidas generadas}
+        JSON de tablas, JSON de consultas, metricas de ML, curvas de perdida y capturas de ejecucion.
+    \end{block}
+\end{frame}
+
+\begin{frame}{Arquitectura implementada}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \begin{block}{Cluster}
+                \begin{itemize}
+                    \item 1 master.
+                    \item 2 workers: \texttt{slave1}, \texttt{slave-base}.
+                    \item Hadoop 3.3.0.
+                    \item Spark 3.4.0.
+                    \item Ejecucion sobre YARN.
+                \end{itemize}
+            \end{block}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \begin{block}{Servicios}
+                \begin{itemize}
+                    \item NameNode en master.
+                    \item DataNodes en nodos del cluster.
+                    \item ResourceManager en master.
+                    \item NodeManagers en master y workers.
+                    \item Spark lee HDFS y ejecuta con YARN.
+                \end{itemize}
+            \end{block}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\imgslide
+{Configuracion de nombres entre nodos}
+{ImgConfi/etc_hosts_master_workers.png}
+{Se observa el archivo \texttt{/etc/hosts} con las IPs y nombres \texttt{master}, \texttt{slave-base} y \texttt{slave1}.}
+{La resolucion por nombres permite que HDFS y YARN coordinen servicios entre maquinas sin depender de escribir IPs en cada comando.}
+
+\imgslide
+{Workers registrados en Hadoop}
+{ImgConfi/hadoop_workers_config.png}
+{Se muestra el archivo \texttt{workers} de Hadoop con los nodos que participan en el cluster.}
+{La lista define que nodos intervienen cuando se levantan servicios distribuidos de Hadoop desde el master.}
+
+\imgslide
+{Spark apuntando a Hadoop/YARN}
+{ImgConfi/spark_env_defaults_yarn_config.png}
+{Se observan \texttt{HADOOP\_CONF\_DIR}, \texttt{YARN\_CONF\_DIR}, \texttt{spark.master yarn} y event logs en HDFS.}
+{Esto demuestra que Spark no esta aislado: usa la configuracion de Hadoop y envia las aplicaciones a YARN.}
+
+\imgslide
+{YARN reconoce los tres nodos}
+{ImgConfi/yarn_nodes_showdetails_config.png}
+{El comando \texttt{yarn node -list -showDetails} reporta \texttt{Total Nodes: 3} y los nodos en estado \texttt{RUNNING}.}
+{El ResourceManager tiene registrados al master y a los dos workers, por lo que puede asignar contenedores a todo el cluster.}
+
+\imgslide
+{Vista web del cluster activo}
+{ImgMultiNodo/Nodes_02_yarn_nodos_cluster_activos.png}
+{La interfaz de YARN muestra tres nodos activos, memoria total de 8 GB y 4 vcores.}
+{La arquitectura queda operativa con el minimo requerido: un nodo maestro y dos nodos trabajadores.}
+
+\imgslide
+{Ejecucion distribuida en vivo}
+{ImgMultiNodo/yarn_node_showdetails_live.png}
+{Durante la ejecucion se observan contenedores asignados en \texttt{master}, \texttt{slave1} y \texttt{slave-base}.}
+{Aqui se ve el paralelismo real: la aplicacion no corre solo en el master, sino que YARN reparte contenedores.}
+
+\begin{frame}{ETL: de CSV a dos tablas JSON}
+    \begin{block}{Separacion de tablas}
+        El dataset original mezcla datos de contribuyente, predio, periodo, montos y descuentos. Para analizarlo mejor se separo en una dimension y una tabla de hechos.
+    \end{block}
+
+    \begin{itemize}
+        \item \texttt{contribuyentes.json}: codigo y nombre del contribuyente.
+        \item \texttt{emisiones.json}: predio, contribuyente, periodo, montos, descuentos y ubigeo.
+        \item Granularidad: \texttt{COD\_PREDIO}, \texttt{COD\_CONTRIBUYENTE}, \texttt{PERIODO}.
+        \item Limpieza: montos como \texttt{1,257.60} se convierten correctamente a decimal.
+    \end{itemize}
+\end{frame}
+
+\imgslide
+{Tablas JSON generadas en HDFS}
+{ImgMultiNodo/json_Contribuyente_emisiones.png}
+{HDFS lista las carpetas \texttt{contribuyentes.json} y \texttt{emisiones.json}, con archivos \texttt{part-*} y \texttt{\_SUCCESS}.}
+{La marca \texttt{\_SUCCESS} confirma que Spark escribio correctamente las dos tablas exigidas.}
+
+\imgslide
+{Spark UI durante ETL}
+{ImgMultiNodo/SparkUIETL.png}
+{La interfaz Spark muestra jobs completados durante la etapa de lectura, transformacion y escritura.}
+{El proceso ETL queda registrado como jobs de Spark, desde la lectura del CSV hasta la escritura de las tablas JSON.}
+
+\begin{frame}{Consultas SQL planteadas}
+    \begin{block}{Consulta 1}
+        \textbf{Pregunta:} ?Cuanto se emitio en total y en promedio por concepto municipal durante cada periodo?
+
+        \textbf{Representa:} una vista anual de la carga emitida por parques, serenazgo, residuos solidos y barrido. Permite comparar periodos y reconocer que concepto pesa mas en la emision municipal.
+
+        \textbf{Codigo:} \texttt{SqlQueries.query1GroupByPeriodo}, usando \texttt{groupBy("PERIODO")} y funciones de agregacion.
+    \end{block}
+
+    \begin{block}{Consulta 2}
+        \textbf{Pregunta:} ?Cuales son los predios exclusivos con mayor monto neto en 2025?
+
+        \textbf{Representa:} una lista priorizada de predios con mayor carga neta. Sirve para revisar concentracion de montos, casos atipicos o predios importantes dentro de la recaudacion potencial.
+
+        \textbf{Codigo:} \texttt{SqlQueries.query2TopPrediosTempView}, con vista temporal, filtros, calculo de monto neto y \texttt{ORDER BY}.
+    \end{block}
+
+    \small
+    Ambas consultas corresponden al analisis descriptivo: resumen el comportamiento del dataset y convierten registros individuales en informacion interpretable.
+\end{frame}
+
+\imgslide
+{Resultado SQL 1: emision por periodo}
+{ImgMultiNodo/Query1_Resultado_Head.png}
+{El resultado agrupa por \texttt{PERIODO} y muestra totales/promedios de parques, serenazgo, residuos y barrido.}
+{Se observa que serenazgo es el concepto de mayor monto total y que el numero de emisiones crece hacia 2025. Esta vista permite comparar anos y entender la composicion de la emision municipal.}
+
+\imgslide
+{Resultado SQL 2: top predios 2025}
+{ImgMultiNodo/Query2_resultado_Head.png}
+{La salida muestra los predios exclusivos de 2025 ordenados por \texttt{monto\_total\_neto}.}
+{Esta consulta permite ubicar los predios que mas aportan al monto neto emitido, utiles para revision de concentracion, fiscalizacion o analisis de casos de alto impacto.}
+
+\begin{frame}{Modelos de Machine Learning}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \begin{block}{Regresion}
+                \begin{itemize}
+                    \item Objetivo: estimar \texttt{MONTO\_SERENAZGO}.
+                    \item Modelos: MLPRegressor y SVRegressor.
+                    \item Entrada: montos de otros conceptos, periodo y variables del predio.
+                    \item Utilidad: aproximar cuanto podria emitirse por serenazgo en registros con caracteristicas similares.
+                    \item Codigo: \texttt{MLPRegressor.scala}, \texttt{SVRegressor.scala}.
+                \end{itemize}
+            \end{block}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \begin{block}{Clasificacion}
+                \begin{itemize}
+                    \item Objetivo: clasificar \texttt{TIPO\_PREDIO}.
+                    \item Modelos: Random Forest y MLPClassifier.
+                    \item Entrada: variables de emision y caracteristicas disponibles del registro.
+                    \item Utilidad: reconocer patrones asociados a predios exclusivos u otros tipos de predio.
+                    \item Codigo: \texttt{RFAndMLPClassification.scala}.
+                \end{itemize}
+            \end{block}
+        \end{column}
+    \end{columns}
+
+    \vspace{0.15cm}
+    \small
+    Los datos se dividen en 80\% entrenamiento y 20\% prueba. A diferencia de las consultas SQL, los modelos buscan generalizar patrones: estimar o clasificar registros no usados durante el entrenamiento.
+\end{frame}
+
+\begin{frame}{Metricas principales}
+    \begin{table}
+        \centering
+        \small
+        \begin{tabular}{llrr}
+            \toprule
+            Tipo & Modelo & Mononodo & Cluster \\
+            \midrule
+            Regresion RMSE & MLPRegressor & 1352.55 & 1384.64 \\
+            Regresion RMSE & SVRegressor & 1430.10 & 1486.36 \\
+            Clasificacion F1 & RandomForest & 0.8421 & 0.8397 \\
+            Clasificacion F1 & MLPClassifier & 0.7615 & 0.6255 \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    \begin{block}{Interpretacion rapida}
+        MLPRegressor fue el mejor regresor por RMSE para aproximar \texttt{MONTO\_SERENAZGO}. Random Forest fue el clasificador mas estable para \texttt{TIPO\_PREDIO}. Las diferencias entre local y cluster son esperables por particionamiento, overhead y ejecucion distribuida.
+    \end{block}
+\end{frame}
+
+\imgslide
+{Metricas obtenidas en el cluster}
+{ImgNod1/Metricas_Regresion_Clasificacion.png}
+{La captura muestra metricas de regresion y clasificacion leidas desde HDFS tras la ejecucion multinodo.}
+{Las metricas resumen el comportamiento de los modelos entrenados dentro del flujo Spark ejecutado sobre el cluster.}
+
+\imgslide
+{Curva de perdida: MLPRegressor}
+{ImgNod1/Curva_Perdida_MLP_Regre.png}
+{La perdida del MLPRegressor disminuye durante el entrenamiento por epocas.}
+{Esto indica que el modelo aprende progresivamente una relacion entre las variables monetarias y el monto de serenazgo.}
+
+\imgslide
+{Curva de perdida: SVRegressor}
+{ImgNod1/Curva_Perdida_svr_regresor.png}
+{La perdida del SVRegressor tambien desciende y luego se estabiliza.}
+{La curva muestra una convergencia mas lenta que en MLPRegressor, coherente con el entrenamiento por perdida epsilon-insensitiva.}
+
+\begin{frame}{Comparacion mononodo vs. multimodo}
+    \begin{table}
+        \centering
+        \small
+        \begin{tabular}{lrrrr}
+            \toprule
+            Ambiente & Nodos & Vcores & Memoria & Tiempo \\
+            \midrule
+            Mononodo local & 1 & 2 aprox. & local & 7 min 02 s \\
+            Multimodo YARN & 3 & 4 & 8 GB & 18 min 45 s \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    \begin{block}{Resultado}
+        El cluster funciono, pero no fue mas rapido para este dataset. El speedup fue menor que 1 porque la data es pequena y el overhead de YARN, HDFS, shuffle y virtualizacion pesa mas que la paralelizacion.
+    \end{block}
+\end{frame}
+
+\imgslide
+{Recursos por nodo durante ejecucion}
+{ImgNod1/Capturas_Rercursos_3nodo_en_vivo.png}
+{Se visualiza \texttt{htop} en master, \texttt{slave1} y \texttt{slave-base}, con uso de CPU/memoria y procesos Java/Spark.}
+{El monitoreo permite observar que los nodos participan en la ejecucion y que los recursos se consumen de forma distribuida.}
+
+\imgslide
+{Aplicacion finalizada correctamente}
+{ImgMultiNodo/cluster_01_yarn_aplicacion_spark_succeeded.png}
+{YARN muestra la aplicacion \texttt{ArbitriosMDJM} con estado \texttt{FINISHED} y resultado \texttt{SUCCEEDED}.}
+{La ejecucion completa termina correctamente en YARN, validando el flujo desde entrada en HDFS hasta salidas finales.}
+
+\imgslide
+{Logs de Spark en HDFS}
+{ImgConfi/hdfs_spark_event_logs.png}
+{La carpeta \texttt{/spark-logs} contiene event logs de aplicaciones Spark ejecutadas.}
+{Los event logs dejan registro persistente de las aplicaciones y habilitan revision historica mediante Spark History Server.}
+
+\begin{frame}{Conclusiones}
+    \begin{block}{Lectura municipal del dataset}
+        El dataset publico de la MDJM permite pasar de registros administrativos a una vista analitica de la emision de arbitrios: montos por periodo, peso de cada concepto y predios con mayor carga tributaria.
+    \end{block}
+
+    \begin{itemize}
+        \item La consulta por periodo muestra que \texttt{SERENAZGO} concentra los mayores montos, por lo que es el concepto mas influyente en la emision total.
+        \item El ranking de predios 2025 identifica casos de mayor monto neto; esto ayuda a priorizar revision, fiscalizacion o explicacion de variaciones en la emision.
+        \item En clasificacion, Random Forest fue el modelo mas estable para \texttt{TIPO\_PREDIO}; en regresion, MLPRegressor obtuvo el menor RMSE para \texttt{MONTO\_SERENAZGO}.
+        \item Los modelos no reemplazan la decision municipal, pero sirven como apoyo para detectar patrones, concentraciones y posibles casos que requieren analisis adicional.
+        \item El cluster de tres nodos valida que el flujo puede escalar sobre HDFS y YARN, aunque en este volumen de datos el overhead fue mayor que la ganancia de paralelismo.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Ejecucion reproducible}
+    \small
+    \begin{block}{Entrada y salida}
+        El dataset se ubica en \texttt{hdfs:///mdjm/input/dataset\_vf\_3.csv} y la salida multinodo verificada en \texttt{hdfs:///mdjm/output\_3nodes\_verify\_20260707\_2325}.
+    \end{block}
+
+    \begin{block}{Comando base}
+        \texttt{spark-submit --class mdjm.Main --master yarn arbitrios-mdjm.jar hdfs:///mdjm/input/dataset\_vf\_3.csv hdfs:///mdjm/output\_3nodes\_verify\_20260707\_2325 all}
+    \end{block}
+
+    \begin{block}{Verificacion}
+        Las salidas quedan organizadas en \texttt{tables/}, \texttt{queries/}, \texttt{metrics/} y \texttt{loss\_curves/}.
+    \end{block}
+\end{frame}
+
+\begin{frame}
+    \centering
+    \Huge Gracias
+
+    \vspace{0.6cm}
+    \large Preguntas
+\end{frame}
+
+\end{document}

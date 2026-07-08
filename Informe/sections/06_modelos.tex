@@ -6,7 +6,7 @@ Los modelos se entrenaron sobre \texttt{emisiones.json}. Para regresion se usaro
 
 Para clasificacion se construyo la etiqueta \texttt{TIPO\_PREDIO}: \textit{Exclusivo} cuando \texttt{PORCENTAJE\_CONDOMINIO = 100} y \textit{Compartido} en los demas casos. Esta columna no se uso como feature en clasificacion, porque incluirla generaria fuga de datos: el modelo aprenderia directamente el umbral que define la etiqueta.
 
-En ambos casos se aplico division entrenamiento/prueba de 80/20 con semilla fija y normalizacion de variables mediante \texttt{StandardScaler}.
+En ambos casos se aplico division entrenamiento/prueba de 80/20 con semilla fija y normalizacion de variables mediante \texttt{StandardScaler}. Por ello, las metricas no se calculan sobre los mismos registros usados para entrenar, sino sobre una particion de prueba; esto permite hablar de capacidad predictiva bajo condiciones similares a las observadas en el dataset.
 
 \subsection{Regresion}
 
